@@ -1,0 +1,24 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  App\Domain\Blog\Repository\ArticleRepositoryInterface: '@App\Infrastructure\Persistence\Doctrine\Repository\DoctrineArticleRepository'
+  App\Application\Port\ArticleCachePort: '@App\Infrastructure\Cache\RedisArticleCache'
+
+  redis.connection:
+    class: Redis
+    factory: ['Symfony\Component\Cache\Adapter\RedisAdapter', 'createConnection']
+    arguments:
+      - '%env(REDIS_URL)%'
+
+  App\Infrastructure\Cache\RedisArticleCache:
+    arguments:
+      $cache: '@cache.app'
+      $redis: '@redis.connection'
+      $listVersionKey: '%env(CACHE_LIST_VERSION_KEY)%'
+
+  App\:
+    resource: '../src/'
+    exclude:
+      - '../src/Kernel.php'
